@@ -1,0 +1,9 @@
+/* Это комментарий — браузер его игнорирует */
+body {
+    background-color: lightblue; /* Цвет фона страницы */
+    font-family: Arial, sans-serif; /* Шрифт текста */
+}
+h1 {
+    color: darkblue; /* Цвет заголовка */
+    text-align: center; /* Выравнивание по центру */
+}
