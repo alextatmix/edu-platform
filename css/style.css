@@ -1,9 +1,213 @@
-/* Это комментарий — браузер его игнорирует */
-body {
-    background-color: lightblue; /* Цвет фона страницы */
-    font-family: Arial, sans-serif; /* Шрифт текста */
+/* ========================================
+   БАЗОВЫЕ СТИЛИ (сброс и настройки)
+   ======================================== */
+
+/* Убираем стандартные отступы браузера */
+* {
+    margin: 0;           /* Внешний отступ */
+    padding: 0;          /* Внутренний отступ */
+    box-sizing: border-box; /* Учитывать отступы в размере */
 }
-h1 {
-    color: darkblue; /* Цвет заголовка */
-    text-align: center; /* Выравнивание по центру */
+
+/* Базовые настройки для всей страницы */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Шрифт */
+    background-color: #f5f7fa; /* Светло-серый фон */
+    color: #333; /* Тёмно-серый текст */
+    line-height: 1.6; /* Межстрочный интервал */
+}
+
+/* ========================================
+   ШАПКА САЙТА (HEADER)
+   ======================================== */
+
+header {
+    background-color: #2c3e50; /* Тёмно-синий фон */
+    color: white; /* Белый текст */
+    padding: 15px 30px; /* Отступы: сверху/снизу 15px, слева/справа 30px */
+    display: flex; /* Гибкое расположение элементов */
+    justify-content: space-between; /* Разнести по краям */
+    align-items: center; /* Выровнять по вертикали */
+}
+
+/* Логотип */
+.logo {
+    font-size: 24px; /* Размер шрифта */
+    font-weight: bold; /* Жирный шрифт */
+}
+
+/* Навигация */
+nav a {
+    color: white; /* Белый цвет ссылок */
+    text-decoration: none; /* Убрать подчёркивание */
+    margin-left: 20px; /* Отступ слева */
+    transition: color 0.3s; /* Плавное изменение цвета */
+}
+
+/* Эффект при наведении на ссылку */
+nav a:hover {
+    color: #3498db; /* Голубой цвет при наведении */
+}
+
+/* ========================================
+   ОСНОВНОЙ КОНТЕНТ (MAIN)
+   ======================================== */
+
+main {
+    min-height: 80vh; /* Минимальная высота - 80% от экрана */
+    display: flex; /* Гибкое расположение */
+    justify-content: center; /* По центру горизонтально */
+    align-items: center; /* По центру вертикально */
+    padding: 40px 20px; /* Отступы вокруг */
+}
+
+/* Секция регистрации */
+.register-section {
+    background: white; /* Белый фон карточки */
+    padding: 40px; /* Внутренние отступы */
+    border-radius: 10px; /* Закруглённые углы */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Тень */
+    width: 100%; /* Ширина */
+    max-width: 450px; /* Максимальная ширина */
+}
+
+/* Заголовок секции */
+.register-section h1 {
+    color: #2c3e50; /* Тёмно-синий */
+    margin-bottom: 10px; /* Отступ снизу */
+    text-align: center; /* По центру */
+}
+
+/* Описание под заголовком */
+.register-section > p {
+    color: #7f8c8d; /* Серый цвет */
+    text-align: center; /* По центру */
+    margin-bottom: 30px; /* Отступ снизу */
+}
+
+/* ========================================
+   ФОРМА (FORM)
+   ======================================== */
+.form-group {
+    margin-bottom: 20px; /* Отступ между полями */
+}
+
+/* Подписи к полям */
+.form-group label {
+    display: block; /* Блочный элемент (на новой строке) */
+    margin-bottom: 5px; /* Отступ снизу */
+    font-weight: 500; /* Средний вес шрифта */
+    color: #2c3e50; /* Тёмно-синий */
+}
+
+/* Поля ввода */
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%; /* Полная ширина */
+    padding: 12px; /* Внутренний отступ */
+    border: 2px solid #ddd; /* Рамка */
+    border-radius: 5px; /* Закруглённые углы */
+    font-size: 16px; /* Размер шрифта */
+    transition: border-color 0.3s; /* Плавное изменение рамки */
+}
+
+/* Эффект при фокусе (когда кликнули в поле) */
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none; /* Убрать стандартную обводку */
+    border-color: #3498db; /* Голубая рамка */
+}
+
+/* Чекбокс (отдельный стиль) */
+.checkbox-group {
+    display: flex; /* Гибкое расположение */
+    align-items: center; /* По центру вертикали */
+    gap: 10px; /* Расстояние между элементами */
+}
+
+.checkbox-group input {
+    width: auto; /* Автоматическая ширина (не 100%) */
+    cursor: pointer; /* Курсор-рука при наведении */
+}
+
+.checkbox-group label {
+    margin-bottom: 0; /* Без отступа снизу */
+    font-weight: normal; /* Обычный вес шрифта */
+    cursor: pointer; /* Курсор-рука */
+}
+
+/* ========================================
+   КНОПКА (BUTTON)
+   ======================================== */
+.btn-submit {
+    width: 100%; /* Полная ширина */
+    padding: 14px; /* Внутренний отступ */
+    background-color: #3498db; /* Голубой фон */
+    color: white; /* Белый текст */
+    border: none; /* Без рамки */
+    border-radius: 5px; /* Закруглённые углы */
+    font-size: 18px; /* Размер шрифта */
+    font-weight: bold; /* Жирный шрифт */
+    cursor: pointer; /* Курсор-рука */
+    transition: background-color 0.3s; /* Плавное изменение фона */
+}
+
+/* Эффект при наведении на кнопку */
+.btn-submit:hover {
+    background-color: #2980b9; /* Тёмно-голубой при наведении */
+}
+
+/* ========================================
+   ССЫЛКА НА ВХОД
+   ======================================== */
+.login-link {
+    text-align: center; /* По центру */
+    margin-top: 20px; /* Отступ сверху */
+    color: #7f8c8d; /* Серый цвет */
+}
+
+.login-link a {
+    color: #3498db; /* Голубая ссылка */
+    text-decoration: none; /* Без подчёркивания */
+    font-weight: bold; /* Жирный */
+}
+
+.login-link a:hover {
+    text-decoration: underline; /* Подчёркивание при наведении */
+}
+
+/* ========================================
+   ПОДВАЛ (FOOTER)
+   ======================================== */
+footer {
+    background-color: #2c3e50; /* Тёмно-синий фон */
+    color: white; /* Белый текст */
+    text-align: center; /* По центру */
+    padding: 20px; /* Отступы */
+}
+
+/* ========================================
+   АДАПТИВНОСТЬ (для мобильных)
+   ======================================== */
+/* Если экран меньше 600px (телефоны) */
+@media (max-width: 600px) {
+    header {
+        flex-direction: column; /* Элементы друг под другом */
+        text-align: center; /* Текст по центру */
+        padding: 15px; /* Меньше отступы */
+    }
+
+    nav {
+        margin-top: 15px; /* Отступ сверху */
+    }
+
+    nav a {
+        margin: 0 10px; /* Меньше отступы между ссылками */
+    }
+
+    .register-section {
+        padding: 25px; /* Меньше отступы внутри карточки */
+    }
 }

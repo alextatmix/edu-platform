@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <!-- Мета-информация для браузера -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Заголовок вкладки браузера -->
+    <title>Регистрация - EduPlatform</title>
+
+    <!-- Подключение стилей -->
+    <link rel="stylesheet" href="../css/style.css" />
+    <!-- Подключение JavaScript (будет в конце body, но можно и здесь с defer) -->
+    <script src="../js/register.js" defer></script>
+  </head>
+  <body>
+    <!-- Шапка сайта -->
+    <header>
+      <div class="logo">EduPlatform</div>
+      <nav>
+        <a href="index.html">Главная</a>
+        <a href="register.html">Регистрация</a>
+        <a href="login.html">Вход</a>
+      </nav>
+    </header>
+
+    <!-- Основной контент -->
+    <main>
+      <!-- Секция с формой регистрации -->
+      <section class="register-section">
+        <h1>Создать аккаунт</h1>
+        <p>Заполните форму, чтобы начать обучение или преподавание</p>
+
+        <!-- Форма отправки данных -->
+        <form action="/register" method="POST" class="register-form">
+          <!-- Поле: Имя -->
+          <div class="form-group">
+            <label for="fullName">Ваше имя</label>
+            <input
+              type="text"
+              id="fullName"
+              name="fullName"
+              placeholder="Иван Иванов"
+              required
+            />
+          </div>
+
+          <!-- Поле: Email -->
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="example@mail.ru"
+              required
+            />
+            <!-- Место для сообщения об ошибке email -->
+            <div id="email-error" style="display: none"></div>
+          </div>
+
+          <!-- Поле: Пароль -->
+          <div class="form-group">
+            <label for="password">Пароль</label>
+            <div class="password-wrapper" style="position: relative">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Минимум 8 символов"
+                minlength="8"
+                required
+                style="width: 100%; padding-right: 80px"
+              />
+              <button
+                type="button"
+                id="toggle-password"
+                style="
+                  position: absolute;
+                  right: 10px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  background: none;
+                  border: none;
+                  cursor: pointer;
+                "
+              >
+                👁️ Показать
+              </button>
+            </div>
+          </div>
+
+          <!-- Поле: Роль (Стуент или преподаватедь) -->
+          <div class="form-group">
+            <label for="role">Кто Вы?</label>
+            <select name="role" id="role" required>
+              <option value="" disabled selected>Выберите роль</option>
+              <option value="student">Студент</option>
+              <option value="teacher">Преподаватель</option>
+            </select>
+          </div>
+          <!-- Чекбокс: Согласие с правилами -->
+          <div class="form-group checkbox-group">
+            <input type="checkbox" id="agreement" name="agreement" required />
+            <label for="agreement">Я согласен с правилами платформы</label>
+          </div>
+
+          <!-- Кнопка отправки формы -->
+          <button type="submit" class="btn-submit">Зарегистрироваться</button>
+        </form>
+
+        <!-- Ссылка на вход для существующих пользователей -->
+        <p class="login-link">
+          Уже есть аккаунт? <a href="login.html">Войти</a>
+        </p>
+      </section>
+    </main>
+
+    <!-- Подвал сайта -->
+    <footer>
+      <p>&copy; 2024 EduPlatform. Все права защищены.</p>
+    </footer>
+    <!-- <script src="../js/register.js"></script> -->
+  </body>
+</html>
