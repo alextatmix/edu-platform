@@ -74,10 +74,21 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.json();
         })
         .then(result => {
-            alert('✅ ' + result.message);
-            // В будущем: перенаправление в личный кабинет
-            // window.location.href = '/dashboard';
-        })
+    // ✅ Сохраняем данные пользователя в localStorage
+    localStorage.setItem('currentUser', JSON.stringify(result.user));
+    
+    // 🎉 Показываем сообщение
+    alert('✅ ' + result.message);
+    
+    // 🔄 Перенаправляем в зависимости от роли
+    if (result.user.role === 'teacher') {
+        // Преподаватель → в кабинет
+        window.location.href = '/teacher-dashboard.html';
+    } else {
+        // Студент → на главную
+        window.location.href = '/index.html';
+    }
+})
         .catch(error => {
             alert('❌ ' + error.message);
             showError(emailError, error.message);

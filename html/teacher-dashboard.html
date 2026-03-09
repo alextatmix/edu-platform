@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Кабинет преподавателя - EduPlatform</title>
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <!-- Шапка -->
+    <header>
+      <div class="logo">EduPlatform</div>
+      <nav>
+        <a href="index.html">Главная</a>
+        <a href="teacher-dashboard.html">Кабинет</a>
+        <a href="login.html">Выход</a>
+      </nav>
+    </header>
+
+    <!-- Основной контент -->
+    <main>
+      <section class="dashboard-section">
+        <h1>👨‍🏫 Кабинет преподавателя</h1>
+        <p id="teacher-welcome">Добро пожаловать!</p>
+
+        <!-- Кнопка создания курса -->
+        <button id="open-create-course" class="btn-submit">
+          ➕ Создать новый курс
+        </button>
+
+        <!-- Список курсов -->
+        <div class="courses-list">
+          <h2>📚 Мои курсы</h2>
+          <div id="courses-container">
+            <!-- Сюда загрузятся курсы через JavaScript -->
+            <p>Загрузка курсов...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Модальное окно создания курса -->
+      <div id="create-course-modal" class="modal" style="display: none">
+        <div class="modal-content">
+          <span class="close-modal">&times;</span>
+          <h2>Создать новый курс</h2>
+
+          <form id="create-course-form">
+            <div class="form-group">
+              <label for="course-title">Название курса</label>
+              <input
+                type="text"
+                id="course-title"
+                name="title"
+                required
+                placeholder="Например: JavaScript для начинающих"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="course-description">Описание</label>
+              <textarea
+                id="course-description"
+                name="description"
+                rows="4"
+                placeholder="Опишите, чему научатся студенты"
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="course-price">Цена (₽)</label>
+              <input
+                type="number"
+                id="course-price"
+                name="price"
+                min="0"
+                value="0"
+              />
+            </div>
+
+            <button type="submit" class="btn-submit">Создать курс</button>
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <!-- Подвал -->
+    <footer>
+      <p>&copy; 2024 EduPlatform. Все права защищены.</p>
+    </footer>
+
+    <!-- Скрипты -->
+    <script src="../js/cookie-banner.js"></script>
+    <script src="../js/teacher-dashboard.js"></script>
+  </body>
+</html>

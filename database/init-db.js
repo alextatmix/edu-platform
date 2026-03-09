@@ -38,6 +38,7 @@ db.exec(`
         title TEXT NOT NULL,
         description TEXT,
         teacherId INTEGER NOT NULL,
+        teacherName TEXT NOT NULL,
         price REAL DEFAULT 0,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (teacherId) REFERENCES users(id)

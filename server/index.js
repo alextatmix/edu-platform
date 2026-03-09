@@ -101,6 +101,10 @@ app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, '../html/login.html'));
 });
 
+// 👨‍🏫 Кабинет преподавателя
+app.get('/teacher-dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, '../html/teacher-dashboard.html'));
+});
 
 /* ========================================
    6. МАРШРУТЫ — API (POST-запросы)
@@ -283,6 +287,103 @@ app.get('/api/status', (req, res) => {
         timestamp: new Date().toISOString(),
         uptime: process.uptime() // Время работы сервера в секундах
     });
+});
+
+/* ========================================
+   МАРШРУТЫ ДЛЯ КУРСОВ (CRUD)
+   ======================================== */
+
+// 📚 ПОЛУЧИТЬ ВСЕ КУРСЫ (Read)
+app.get('/api/courses', (req, res) => {
+    try {
+        const stmt = db.prepare('SELECT * FROM courses ORDER BY createdAt DESC');
+        const courses = stmt.all();
+        
+        res.json({
+            success: true,
+            count: courses.length,
+            courses: courses
+        });
+    } catch (error) {
+        console.error('Ошибка получения курсов:', error.message);
+        res.status(500).json({ success: false, message: 'Ошибка сервера' });
+    }
+});
+
+// ➕ СОЗДАТЬ КУРС (Create)
+app.post('/api/courses', (req, res) => {
+    const { title, description, price, teacherId, teacherName } = req.body;
+    
+    // Валидация
+    const errors = [];
+    if (!title || title.trim().length < 3) {
+        errors.push('Название курса должно содержать минимум 3 символа');
+    }
+    if (!teacherId) {
+        errors.push('Не указан преподаватель');
+    }
+    
+    if (errors.length > 0) {
+        return res.status(400).json({ success: false, errors });
+    }
+    
+    try {
+        const stmt = db.prepare(`
+            INSERT INTO courses (title, description, price, teacherId, teacherName)
+            VALUES (?, ?, ?, ?, ?)
+        `);
+        
+        const result = stmt.run(
+            title.trim(),
+            description || '',
+            price || 0,
+            teacherId,
+            teacherName || 'Преподаватель'
+        );
+        
+        console.log('✅ Курс создан:', title, '| ID:', result.lastInsertRowid);
+        
+        res.status(201).json({
+            success: true,
+            message: 'Курс успешно создан!',
+            courseId: result.lastInsertRowid
+        });
+        
+    } catch (error) {
+        console.error('Ошибка создания курса:', error.message);
+        res.status(500).json({ success: false, message: 'Ошибка сервера' });
+    }
+});
+
+// 🗑️ УДАЛИТЬ КУРС (Delete)
+app.delete('/api/courses/:id', (req, res) => {
+    const courseId = req.params.id;
+    
+    try {
+        const stmt = db.prepare('DELETE FROM courses WHERE id = ?');
+        const result = stmt.run(courseId);
+        
+        if (result.changes === 0) {
+            return res.status(404).json({ success: false, message: 'Курс не найден' });
+        }
+        
+        console.log('✅ Курс удалён:', courseId);
+        
+        res.json({
+            success: true,
+            message: 'Курс успешно удалён!'
+        });
+        
+    } catch (error) {
+        console.error('Ошибка удаления курса:', error.message);
+        res.status(500).json({ success: false, message: 'Ошибка сервера' });
+    }
+});
+
+// ✏️ ОБНОВИТЬ КУРС (Update) - заготовка на Урок 9
+app.put('/api/courses/:id', (req, res) => {
+    // Будет реализовано в следующем уроке
+    res.json({ success: true, message: 'Редактирование будет добавлено в Уроке 9' });
 });
 
 
