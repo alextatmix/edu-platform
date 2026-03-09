@@ -160,52 +160,108 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /* ========================================
-       СОБЫТИЕ: ОТПРАВКА ФОРМЫ
-       ======================================== */
+   СОБЫТИЕ: ОТПРАВКА ФОРМЫ
+   ======================================== */
 
-       form.addEventListener('submit', function(event) {
-        // Отменяем стандартную отправку формы (иначе страница перезагрузится)
-        event.preventDefault();
+form.addEventListener('submit', function(event) {
+    // Отменяем стандартную отправку формы (иначе страница перезагрузится)
+    event.preventDefault();
 
-        // Переменная для отслеживания ошибок
-        let hasErrors = false;
+    // Переменная для отслеживания ошибок
+    let hasErrors = false;
 
-        // Проверяем имя
-        if (fullNameInput.value.trim() === '') {
-            showError(fullNameInput, 'Введите ваше имя');
-            hasErrors = true;
+    // Скрываем предыдущие ошибки
+    hideError(passwordError);
+    hideError(emailError);
+
+    // Проверяем имя
+    if (fullNameInput.value.trim() === '') {
+        showError(fullNameInput, 'Введите ваше имя');
+        hasErrors = true;
+    }
+
+    // Проверяем email
+    const email = emailInput.value;
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)) {
+        showError(emailError, 'Введите корректный email');
+        hasErrors = true;
+    }
+
+    // Проверяем пароль
+    const password = passwordInput.value;
+    if (password.length < 8) {
+        showError(passwordError, 'Пароль должен содержать минимум 8 символов');
+        hasErrors = true;
+    }
+
+    // Если есть ошибки — не отправляем форму
+    if (hasErrors) {
+        alert('Пожалуйста, исправьте ошибки в форме!');
+        return; // Выходим из функции, отправка не произойдёт
+    }
+
+    // 🎉 ВСЁ ХОРОШО — отправляем данные на сервер!
+
+    // Собираем данные из формы в объект
+    const formData = {
+        fullName: fullNameInput.value.trim(), // .trim() удаляет пробелы по краям
+        email: emailInput.value.trim(),
+        password: passwordInput.value,
+        role: document.getElementById('role').value, // Получаем выбранную роль
+        agreement: document.getElementById('agreement').checked // true/false
+    };
+
+    // Показываем пользователю, что идёт отправка
+    const submitBtn = form.querySelector('.btn-submit');
+    const originalBtnText = submitBtn.textContent;
+    submitBtn.textContent = 'Отправка...';
+    submitBtn.disabled = true;
+
+    // 📡 ОТПРАВЛЯЕМ ЗАПРОС НА СЕРВЕР
+    fetch('/register', {
+        method: 'POST',                    // Метод запроса
+        headers: {
+            'Content-Type': 'application/json'  // Говорим серверу: "отправляем JSON"
+        },
+        body: JSON.stringify(formData)     // Превращаем объект в строку JSON
+    })
+    .then(response => {
+        // Сначала проверяем статус ответа
+        if (!response.ok) {
+            // Если статус 400 или 500 — читаем ошибку
+            return response.json().then(err => {
+                throw new Error(err.errors ? err.errors.join(', ') : 'Ошибка сервера');
+            });
         }
-
-        // Проверяем email
-        const email = emailInput.value;
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailPattern.test(email)) {
-            showError(emailError, 'Введите корректный email');
-            hasErrors = true;
-        }
-
-         // Проверяем пароль
-        const password = passwordInput.value;
-        if (password.length < 8) {
-            showError(passwordError, 'Пароль должен содержать минимум 8 символов');
-            hasErrors = true;
-        }
-
-         // Если есть ошибки — не отправляем форму
-        if (hasErrors) {
-            alert('Пожалуйста, исправьте ошибки в форме!');
-            return;
-        }
-
-         // Если всё хорошо — показываем сообщение об успехе
-        alert('Форма успешно заполнена! Данные готовы к отправке на сервер.');
-        
-        // В реальном проекте здесь был бы код отправки данных на сервер
-        // Например: fetch('/register', { method: 'POST', body: ... })
+        // Если всё хорошо — парсим успешный ответ
+        return response.json();
+    })
+    .then(result => {
+        // ✅ Успешная регистрация
+        console.log('✅ Ответ сервера:', result);
+        alert('🎉 ' + result.message);
         
         // Очищаем форму
         form.reset();
+        
+        // Перенаправляем на страницу входа (опционально)
+        // window.location.href = '/login.html';
+    })
+    .catch(error => {
+        // ❌ Ошибка (сеть или сервер)
+        console.error('❌ Ошибка:', error);
+        alert('❌ Ошибка: ' + error.message);
+        
+        // Показываем ошибку в форме
+        showError(emailError, error.message);
+    })
+    .finally(() => {
+        // Возвращаем кнопку в исходное состояние (выполнится в любом случае)
+        submitBtn.textContent = originalBtnText;
+        submitBtn.disabled = false;
     });
+});
 
     /* ========================================
        ВЫВОД В КОНСОЛЬ (ДЛЯ ОТЛАДКИ)

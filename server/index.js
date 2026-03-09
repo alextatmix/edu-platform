@@ -162,6 +162,59 @@ app.post('/register', (req, res) => {
     console.log('✅ Новый пользователь зарегистрирован:', user.email);
 });
 
+// 🔐 Страница входа (GET)
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, '../html/login.html'));
+});
+
+// 🔐 Обработка входа (POST)
+app.post('/login', (req, res) => {
+    const { email, password } = req.body;
+    
+    // Простая валидация
+    if (!email || !password) {
+        return res.status(400).json({
+            success: false,
+            message: 'Введите email и пароль'
+        });
+    }
+
+    // Читаем пользователей из файла
+    const usersFilePath = path.join(__dirname, '../database/users.json');
+    let users = [];
+    
+    if (fs.existsSync(usersFilePath)) {
+        const fileContent = fs.readFileSync(usersFilePath, 'utf-8');
+        users = JSON.parse(fileContent);
+    }
+
+    // Ищем пользователя (сравнение с toLowerCase для надёжности)
+    const user = users.find(u => 
+        u.email.toLowerCase() === email.toLowerCase() && 
+        u.password === password
+    );
+
+    if (!user) {
+        return res.status(401).json({
+            success: false,
+            message: 'Неверный email или пароль'
+        });
+    }
+
+    // ✅ Успешный вход
+    res.status(200).json({
+        success: true,
+        message: 'Вход выполнен успешно!',
+        user: {
+            id: user.id,
+            email: user.email,
+            role: user.role
+        }
+    });
+
+    console.log('✅ Пользователь вошёл:', user.email);
+});
+
 // 📊 Статус сервера (проверка работы)
 app.get('/api/status', (req, res) => {
     res.json({
@@ -196,6 +249,58 @@ app.use((err, req, res, next) => {
         message: process.env.NODE_ENV === 'development' ? err.message : 'Что-то пошло не так'
     });
 });
+
+// 📝 Страница входа
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, '../html/login.html'));
+});
+
+// 🔐 Обработка входа (POST)
+app.post('/login', (req, res) => {
+    const { email, password } = req.body;
+    
+    // Простая валидация
+    if (!email || !password) {
+        return res.status(400).json({
+            success: false,
+            message: 'Введите email и пароль'
+        });
+    }
+
+    // Читаем пользователей из файла
+    const usersFilePath = path.join(__dirname, '../database/users.json');
+    let users = [];
+    
+    if (fs.existsSync(usersFilePath)) {
+        const fileContent = fs.readFileSync(usersFilePath, 'utf-8');
+        users = JSON.parse(fileContent);
+    }
+
+    // Ищем пользователя с таким email и паролем
+    const user = users.find(u => u.email === email.toLowerCase() && u.password === password);
+
+    if (!user) {
+        return res.status(401).json({
+            success: false,
+            message: 'Неверный email или пароль'
+        });
+    }
+
+    // ✅ Успешный вход
+    res.status(200).json({
+        success: true,
+        message: 'Вход выполнен успешно!',
+        user: {
+            id: user.id,
+            email: user.email,
+            role: user.role
+        }
+    });
+
+    console.log('✅ Пользователь вошёл:', user.email);
+});
+
+
 
 /* ========================================
    ЗАПУСК СЕРВЕРА

@@ -1,12 +1,73 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <title>EduPlatform - Главная</title>
+    <link rel="stylesheet" href="../css/style.css" />
   </head>
   <body>
-    <h1>My first page!</h1>
+    <!-- Шапка -->
+    <header>
+      <div class="logo">EduPlatform</div>
+      <nav>
+        <a href="index.html">Главная</a>
+        <a href="register.html">Регистрация</a>
+        <a href="login.html">Вход</a>
+      </nav>
+    </header>
+
+    <!-- Основной контент -->
+    <main>
+      <section class="hero-section">
+        <h1>Добро пожаловать на EduPlatform</h1>
+        <p>Онлайн-платформа для обучения с современными инструментами</p>
+
+        <div class="hero-buttons">
+          <a href="register.html" class="btn-submit">Начать обучение</a>
+          <a
+            href="login.html"
+            class="btn-decline"
+            style="
+              background: transparent;
+              border: 2px solid #3498db;
+              color: #3498db;
+            "
+            >Войти</a
+          >
+        </div>
+      </section>
+
+      <!-- Преимущества -->
+      <section class="features-section">
+        <h2>Почему выбирают нас</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <h3>📚 Качественные курсы</h3>
+            <p>Программы от практикующих специалистов</p>
+          </div>
+          <div class="feature-card">
+            <h3>🎯 Персональный подход</h3>
+            <p>Индивидуальная траектория обучения</p>
+          </div>
+          <div class="feature-card">
+            <h3>📜 Сертификаты</h3>
+            <p>Документы об окончании курсов</p>
+          </div>
+          <div class="feature-card">
+            <h3>💬 Поддержка 24/7</h3>
+            <p>Помощь в любое время суток</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Подвал -->
+    <footer>
+      <p>&copy; 2024 EduPlatform. Все права защищены.</p>
+    </footer>
+
+    <!-- Cookie-баннер -->
+    <script src="../js/cookie-banner.js"></script>
   </body>
 </html>
