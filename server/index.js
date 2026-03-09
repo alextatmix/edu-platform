@@ -1,88 +1,127 @@
 /* ========================================
-   СЕРВЕР EDUPLATFORM (Node.js + Express)
+   СЕРВЕР EDUPLATFORM (Node.js + Express + SQLite)
+   Полная версия с исправлениями и комментариями
    ======================================== */
-
-// Подключаем необходимые модули
-const express = require('express');        // Веб-фреймворк
-const cors = require('cors');              // Разрешение CORS-запросов
-const bodyParser = require('body-parser'); // Парсинг тела запроса
-const path = require('path');              // Работа с путями файлов
-const fs = require('fs');                  // Работа с файловой системой
-
-// Загружаем переменные окружения из .env файла
-require('dotenv').config();
 
 /* ========================================
-   НАСТРОЙКИ СЕРВЕРА
+   1. ПОДКЛЮЧЕНИЕ МОДУЛЕЙ (IMPORTS)
    ======================================== */
 
-// Создаём приложение Express
+// Express — веб-фреймворк для создания сервера
+const express = require('express');
+
+// CORS — разрешает запросы с других доменов (нужно для разработки)
+const cors = require('cors');
+
+// Body-parser — разбирает данные из тела POST-запросов (JSON и формы)
+const bodyParser = require('body-parser');
+
+// Path — помогает работать с путями к файлам (кроссплатформенно)
+const path = require('path');
+
+// Bcrypt — библиотека для хеширования паролей (безопасность!)
+const bcrypt = require('bcrypt');
+
+// Подключаем инициализацию базы данных (создаёт таблицы, экспортирует db)
+const db = require('../database/init-db');
+
+// Загружаем переменные окружения из файла .env (порт, секреты)
+require('dotenv').config();
+
+
+/* ========================================
+   2. НАСТРОЙКИ СЕРВЕРА
+   ======================================== */
+
+// Создаём экземпляр приложения Express
 const app = express();
 
 // Порт, на котором будет работать сервер
+// Берём из .env или используем 3000 по умолчанию
 const PORT = process.env.PORT || 3000;
 
+
 /* ========================================
-   MIDDLEWARE (промежуточные обработчики)
+   3. MIDDLEWARE (ПРОМЕЖУТОЧНЫЕ ОБРАБОТЧИКИ)
    ======================================== */
 
-// Разрешаем CORS (запросы с других доменов)
+// Включаем CORS — разрешает браузеру делать запросы к нашему серверу
 app.use(cors());
 
-// Разрешаем принимать JSON в запросах
+// Разрешаем серверу принимать JSON в теле запроса
 app.use(bodyParser.json());
 
-// Разрешаем принимать данные форм (URL-encoded)
+// Разрешаем серверу принимать данные форм (urlencoded)
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Логируем все запросы в консоль (свой middleware)
+// Логируем все запросы в консоль (для отладки)
 app.use((req, res, next) => {
+    // Формируем временную метку в русском формате
     const timestamp = new Date().toLocaleTimeString('ru-RU');
+    // Выводим: [14:30:45] POST /register
     console.log(`[${timestamp}] ${req.method} ${req.url}`);
-    next(); // Передаём управление следующему обработчику
+    // next() передаёт управление следующему обработчику (обязательно!)
+    next();
 });
 
+
 /* ========================================
-   РАЗДАЧА СТАТИЧЕСКИХ ФАЙЛОВ
+   4. РАЗДАЧА СТАТИЧЕСКИХ ФАЙЛОВ
    ======================================== */
 
-// Папка html/ — главные страницы
+// Папка html/ — главные HTML-страницы (корень сайта)
 app.use(express.static(path.join(__dirname, '../html')));
 
-// Папка css/ — стили
+// Папка css/ — файлы стилей (доступ по /css/style.css)
 app.use('/css', express.static(path.join(__dirname, '../css')));
 
-// Папка js/ — скрипты
+// Папка js/ — клиентские скрипты (доступ по /js/script.js)
 app.use('/js', express.static(path.join(__dirname, '../js')));
 
+
 /* ========================================
-   МАРШРУТЫ (ROUTES) — API
+   5. МАРШРУТЫ — СТРАНИЦЫ (GET-запросы)
    ======================================== */
 
 // 🏠 Главная страница
 app.get('/', (req, res) => {
+    // Отправляем файл index.html из папки html/
     res.sendFile(path.join(__dirname, '../html/index.html'));
 });
 
 // 📝 Страница регистрации
 app.get('/register', (req, res) => {
+    // Отправляем файл register.html
     res.sendFile(path.join(__dirname, '../html/register.html'));
 });
 
-// 📝 Обработка регистрации (POST)
+// 🔐 Страница входа
+app.get('/login', (req, res) => {
+    // Отправляем файл login.html
+    res.sendFile(path.join(__dirname, '../html/login.html'));
+});
+
+
+/* ========================================
+   6. МАРШРУТЫ — API (POST-запросы)
+   ======================================== */
+
+// 📝 ОБРАБОТКА РЕГИСТРАЦИИ (POST /register)
 app.post('/register', (req, res) => {
-    // Получаем данные из тела запроса
+    
+    // 🔥 КРИТИЧНО: Извлекаем данные из тела запроса
+    // req.body содержит данные, которые отправил браузер
     const { fullName, email, password, role, agreement } = req.body;
     
-    // 🔒 ВАЛИДАЦИЯ ДАННЫХ
-    const errors = [];
+    // 🔒 ВАЛИДАЦИЯ: Проверяем данные перед сохранением
+    const errors = []; // Массив для сбора ошибок
     
     // Проверка имени
     if (!fullName || fullName.trim().length < 2) {
         errors.push('Имя должно содержать минимум 2 символа');
     }
     
-    // Проверка email
+    // Проверка email (простая регулярка)
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailPattern.test(email)) {
         errors.push('Введите корректный email');
@@ -95,7 +134,7 @@ app.post('/register', (req, res) => {
     
     // Проверка роли
     if (!role || !['student', 'teacher'].includes(role)) {
-        errors.push('Выберите корректную роль (student или teacher)');
+        errors.push('Выберите корректную роль');
     }
     
     // Проверка согласия
@@ -103,72 +142,77 @@ app.post('/register', (req, res) => {
         errors.push('Необходимо согласие с правилами');
     }
     
-    // Если есть ошибки — возвращаем их клиенту
+    // Если есть ошибки — возвращаем их клиенту и останавливаемся
     if (errors.length > 0) {
-        return res.status(400).json({
+        return res.status(400).json({ success: false, errors });
+    }
+    
+    // 🎉 ВСЁ ХОРОШО — сохраняем пользователя в базу данных
+    try {
+        
+        // 🔐 ХЕШИРОВАНИЕ ПАРОЛЯ (никогда не храни пароли в открытом виде!)
+        const saltRounds = 10; // Чем больше — тем медленнее, но безопаснее
+        const passwordHash = bcrypt.hashSync(password, saltRounds);
+        
+        // 📊 ПОДГОТАВЛИВАЕМ SQL-запрос с параметрами (?)
+        // Prepared statements защищают от SQL-инъекций
+        const stmt = db.prepare(`
+            INSERT INTO users (fullName, email, passwordHash, role, agreement)
+            VALUES (?, ?, ?, ?, ?)
+        `);
+        
+        // 📝 ВЫПОЛНЯЕМ запрос, подставляя данные вместо ?
+        const result = stmt.run(
+            fullName.trim(),           // Убираем лишние пробелы
+            email.toLowerCase(),       // Email в нижнем регистре (уникальность)
+            passwordHash,              // Захешированный пароль
+            role,                      // Роль: student или teacher
+            agreement ? 1 : 0          // Преобразуем boolean в 1/0 для SQLite
+        );
+        
+        // Логируем успешную регистрацию
+        console.log('✅ Новый пользователь в БД:', email, '| ID:', result.lastInsertRowid);
+        
+        // 🎉 ВОЗВРАЩАЕМ успешный ответ клиенту
+        res.status(201).json({
+            success: true,
+            message: 'Регистрация успешна!',
+            userId: result.lastInsertRowid,
+            // Возвращаем только безопасные данные (без пароля!)
+            user: {
+                id: result.lastInsertRowid,
+                email: email.toLowerCase(),
+                role: role
+            }
+        });
+        
+    } catch (error) {
+        // ⚠️ ОБРАБОТКА ОШИБОК БАЗЫ ДАННЫХ
+        
+        // Если ошибка из-за уникальности email (UNIQUE constraint)
+        if (error.message && error.message.includes('UNIQUE')) {
+            return res.status(400).json({
+                success: false,
+                errors: ['Пользователь с таким email уже существует']
+            });
+        }
+        
+        // Любая другая ошибка — логируем и возвращаем 500
+        console.error('❌ Ошибка регистрации:', error.message);
+        res.status(500).json({
             success: false,
-            errors: errors
+            message: 'Ошибка сервера при регистрации'
         });
     }
-    
-    // 🎉 ВСЁ ХОРОШО — сохраняем данные (пока в файл, позже в БД)
-    
-    // Создаём объект пользователя
-    const user = {
-        id: Date.now(),              // Уникальный ID (временное решение)
-        fullName: fullName.trim(),
-        email: email.toLowerCase(),
-        password: password,          // ⚠️ В реальном проекте — хешировать!
-        role: role,
-        agreement: agreement,
-        createdAt: new Date().toISOString()
-    };
-    
-    // Путь к файлу для хранения пользователей
-    const usersFilePath = path.join(__dirname, '../database/users.json');
-    
-    // Читаем существующих пользователей (или создаём пустой массив)
-    let users = [];
-    if (fs.existsSync(usersFilePath)) {
-        const fileContent = fs.readFileSync(usersFilePath, 'utf-8');
-        users = JSON.parse(fileContent);
-    }
-    
-    // Добавляем нового пользователя
-    users.push(user);
-    
-    // Сохраняем обратно в файл
-    fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2), 'utf-8');
-    
-    // 🔐 В реальном проекте здесь было бы:
-    // 1. Хеширование пароля (bcrypt)
-    // 2. Сохранение в базу данных (SQLite/PostgreSQL)
-    // 3. Отправка приветственного email
-    // 4. Создание сессии или JWT-токена
-    
-    // Возвращаем успех клиенту
-    res.status(201).json({
-        success: true,
-        message: 'Регистрация успешна!',
-        userId: user.id,
-        // ⚠️ Никогда не возвращай пароль в ответе!
-        user: {
-            id: user.id,
-            email: user.email,
-            role: user.role
-        }
-    });
-    
-    console.log('✅ Новый пользователь зарегистрирован:', user.email);
 });
+// ← ЗАКРЫВАЕТСЯ ФУНКЦИЯ app.post('/register', ...)
+// ⚠️ НИКАКОГО КОДА НЕ ДОЛЖНО БЫТЬ ЗДЕСЬ!
 
-// 🔐 Страница входа (GET)
-app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, '../html/login.html'));
-});
 
-// 🔐 Обработка входа (POST)
+// 🔐 ОБРАБОТКА ВХОДА (POST /login)
 app.post('/login', (req, res) => {
+    
+    // 🔥 Извлекаем данные из запроса
     const { email, password } = req.body;
     
     // Простая валидация
@@ -178,44 +222,60 @@ app.post('/login', (req, res) => {
             message: 'Введите email и пароль'
         });
     }
-
-    // Читаем пользователей из файла
-    const usersFilePath = path.join(__dirname, '../database/users.json');
-    let users = [];
     
-    if (fs.existsSync(usersFilePath)) {
-        const fileContent = fs.readFileSync(usersFilePath, 'utf-8');
-        users = JSON.parse(fileContent);
-    }
-
-    // Ищем пользователя (сравнение с toLowerCase для надёжности)
-    const user = users.find(u => 
-        u.email.toLowerCase() === email.toLowerCase() && 
-        u.password === password
-    );
-
-    if (!user) {
-        return res.status(401).json({
+    try {
+        // 📊 ИЩЕМ пользователя в базе по email
+        // prepare() — подготовленный запрос (защита от инъекций)
+        const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
+        // get() — возвращает одну запись или undefined
+        const user = stmt.get(email.toLowerCase());
+        
+        // Если пользователь не найден
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Неверный email или пароль'
+            });
+        }
+        
+        // 🔐 ПРОВЕРЯЕМ пароль: сравниваем введённый с хешем в БД
+        // compareSync возвращает true, если пароль совпадает
+        const passwordMatch = bcrypt.compareSync(password, user.passwordHash);
+        
+        if (!passwordMatch) {
+            return res.status(401).json({
+                success: false,
+                message: 'Неверный email или пароль'
+            });
+        }
+        
+        // ✅ Успешный вход — логируем
+        console.log('✅ Пользователь вошёл:', user.email);
+        
+        // Возвращаем успешный ответ
+        res.status(200).json({
+            success: true,
+            message: 'Вход выполнен успешно!',
+            user: {
+                id: user.id,
+                email: user.email,
+                role: user.role
+            }
+        });
+        
+    } catch (error) {
+        // Обработка ошибок базы данных
+        console.error('❌ Ошибка входа:', error.message);
+        res.status(500).json({
             success: false,
-            message: 'Неверный email или пароль'
+            message: 'Ошибка сервера при входе'
         });
     }
-
-    // ✅ Успешный вход
-    res.status(200).json({
-        success: true,
-        message: 'Вход выполнен успешно!',
-        user: {
-            id: user.id,
-            email: user.email,
-            role: user.role
-        }
-    });
-
-    console.log('✅ Пользователь вошёл:', user.email);
 });
+// ← ЗАКРЫВАЕТСЯ ФУНКЦИЯ app.post('/login', ...)
 
-// 📊 Статус сервера (проверка работы)
+
+// 📊 СТАТУС СЕРВЕРА (проверка работы через /api/status)
 app.get('/api/status', (req, res) => {
     res.json({
         status: 'ok',
@@ -225,88 +285,47 @@ app.get('/api/status', (req, res) => {
     });
 });
 
+
 /* ========================================
-   ОБРАБОТКА 404 (страница не найдена)
+   7. ОБРАБОТКА 404 (страница не найдена)
    ======================================== */
 
+// Этот обработчик сработает, если ни один маршрут выше не подошёл
 app.use((req, res) => {
     res.status(404).json({
         success: false,
         error: 'Страница не найдена',
-        path: req.url
+        path: req.url // Показываем, какой путь запрашивали
     });
 });
 
+
 /* ========================================
-   ОБРАБОТКА ОШИБОК
+   8. ГЛОБАЛЬНАЯ ОБРАБОТКА ОШИБОК
    ======================================== */
 
+// Этот middleware ловит необработанные ошибки в других маршрутах
 app.use((err, req, res, next) => {
+    // Логируем ошибку в консоль (для разработчика)
     console.error('❌ Ошибка сервера:', err.message);
+    
+    // Возвращаем клиенту безопасное сообщение
     res.status(500).json({
         success: false,
         error: 'Внутренняя ошибка сервера',
+        // В режиме разработки показываем детали ошибки
         message: process.env.NODE_ENV === 'development' ? err.message : 'Что-то пошло не так'
     });
 });
 
-// 📝 Страница входа
-app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, '../html/login.html'));
-});
-
-// 🔐 Обработка входа (POST)
-app.post('/login', (req, res) => {
-    const { email, password } = req.body;
-    
-    // Простая валидация
-    if (!email || !password) {
-        return res.status(400).json({
-            success: false,
-            message: 'Введите email и пароль'
-        });
-    }
-
-    // Читаем пользователей из файла
-    const usersFilePath = path.join(__dirname, '../database/users.json');
-    let users = [];
-    
-    if (fs.existsSync(usersFilePath)) {
-        const fileContent = fs.readFileSync(usersFilePath, 'utf-8');
-        users = JSON.parse(fileContent);
-    }
-
-    // Ищем пользователя с таким email и паролем
-    const user = users.find(u => u.email === email.toLowerCase() && u.password === password);
-
-    if (!user) {
-        return res.status(401).json({
-            success: false,
-            message: 'Неверный email или пароль'
-        });
-    }
-
-    // ✅ Успешный вход
-    res.status(200).json({
-        success: true,
-        message: 'Вход выполнен успешно!',
-        user: {
-            id: user.id,
-            email: user.email,
-            role: user.role
-        }
-    });
-
-    console.log('✅ Пользователь вошёл:', user.email);
-});
-
-
 
 /* ========================================
-   ЗАПУСК СЕРВЕРА
+   9. ЗАПУСК СЕРВЕРА
    ======================================== */
 
+// Запускаем сервер на указанном порту
 app.listen(PORT, () => {
+    // Красивое сообщение в консоль при успешном запуске
     console.log('========================================');
     console.log('🚀 EduPlatform сервер запущен!');
     console.log(`📍 Порт: http://localhost:${PORT}`);

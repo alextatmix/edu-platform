@@ -20,6 +20,8 @@
   },
   "homepage": "https://github.com/alextatmix/edu-platform#readme",
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "better-sqlite3": "^12.6.2",
     "body-parser": "^2.2.2",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
