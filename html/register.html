@@ -54,15 +54,19 @@
               name="email"
               placeholder="example@mail.ru"
               required
+              style="width: 100%; padding: 12px; box-sizing: border-box"
             />
             <!-- Место для сообщения об ошибке email -->
-            <div id="email-error" style="display: none"></div>
+            <div
+              id="email-error"
+              style="display: none; font-size: 14px; margin-top: 5px"
+            ></div>
           </div>
 
           <!-- Поле: Пароль -->
           <div class="form-group">
             <label for="password">Пароль</label>
-            <div class="password-wrapper" style="position: relative">
+            <div style="position: relative">
               <input
                 type="password"
                 id="password"
@@ -70,7 +74,12 @@
                 placeholder="Минимум 8 символов"
                 minlength="8"
                 required
-                style="width: 100%; padding-right: 80px"
+                style="
+                  width: 100%;
+                  padding: 12px;
+                  padding-right: 90px;
+                  box-sizing: border-box;
+                "
               />
               <button
                 type="button"
@@ -83,11 +92,17 @@
                   background: none;
                   border: none;
                   cursor: pointer;
+                  font-size: 14px;
                 "
               >
                 👁️ Показать
               </button>
             </div>
+            <!-- 🔥 ВАЖНО: Контейнер для сообщения об ошибке пароля -->
+            <div
+              id="password-error"
+              style="display: none; font-size: 14px; margin-top: 5px"
+            ></div>
           </div>
 
           <!-- Поле: Роль (Стуент или преподаватедь) -->
@@ -99,6 +114,7 @@
               <option value="teacher">Преподаватель</option>
             </select>
           </div>
+
           <!-- Чекбокс: Согласие с правилами -->
           <div class="form-group checkbox-group">
             <input type="checkbox" id="agreement" name="agreement" required />

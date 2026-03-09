@@ -61,6 +61,11 @@ document.addEventListener('DOMContentLoaded', function() {
        ======================================== */
 
        function showError(element, message) {
+        // 🔥 ПРОВЕРКА: если элемента нет — просто выходим
+    if (!element) {
+        console.warn('⚠️ Элемент для ошибки не найден:', message);
+        return;
+    }
         // Устанавливаем текст ошибки
         element.textContent = message;
         // Показываем элемент (меняем стиль)
@@ -78,6 +83,10 @@ document.addEventListener('DOMContentLoaded', function() {
        ======================================== */
 
        function hideError(element) {
+        // 🔥 ПРОВЕРКА: если элемента нет — просто выходим
+        if (!element) {
+            return;
+        }
         // Скрываем элемент
         element.style.display = 'none';
     }
