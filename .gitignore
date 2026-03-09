@@ -1,0 +1,35 @@
+# ========================================
+# GITIGNORE ДЛЯ EDUPLATFORM
+# ========================================
+
+# 📦 Зависимости Node.js (не загружаем на GitHub)
+node_modules/
+
+# 🔐 Переменные окружения (секреты!)
+.env
+*.env.local
+
+# 🗄️ Файлы базы данных SQLite (тестовые данные)
+*.db
+*.db-shm
+*.db-wal
+database/users.json
+
+# 📝 Логи и временные файлы
+*.log
+*.tmp
+*.temp
+
+# 🖥️ Системные файлы Windows/Mac
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 📁 Папки сборки (будут позже)
+dist/
+build/
+
+# 🔧 Настройки редактора (личные)
+.vscode/
+*.swp
+*.swo
