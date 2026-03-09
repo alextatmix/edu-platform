@@ -6,6 +6,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 🔥 Получаем данные учителя из localStorage (после входа)
     const teacherData = JSON.parse(localStorage.getItem('currentUser')) || {};
+
+    // Новая переменная: режим работы
+    let editMode = false;
+    let editCourseId = null;
     
     // Приветствие
     const welcomeElement = document.getElementById('teacher-welcome');
@@ -30,6 +34,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     closeModalBtn.addEventListener('click', function() {
         modal.style.display = 'none';
+        // 🔥 СБРОС РЕЖИМА ПРИ ЗАКРЫТИИ
+    editMode = false;
+    editCourseId = null;
+    document.querySelector('#create-course-modal h2').textContent = 'Создать новый курс';
+    createCourseForm.querySelector('button[type="submit"]').textContent = 'Создать курс';
+    createCourseForm.reset();
     });
 
     // Закрыть при клике вне окна
@@ -87,17 +97,53 @@ document.addEventListener('DOMContentLoaded', function() {
     // СОЗДАНИЕ КУРСА (CREATE)
     // ========================================
 
-    createCourseForm.addEventListener('submit', function(event) {
-        event.preventDefault();
+    // ========================================
+// УНИВЕРСАЛЬНЫЙ ОБРАБОТЧИК ФОРМЫ
+// ========================================
 
-        const courseData = {
-            title: document.getElementById('course-title').value,
-            description: document.getElementById('course-description').value,
-            price: parseFloat(document.getElementById('course-price').value) || 0,
-            teacherId: teacherData.id || 1, // В реальном проекте — из сессии
-            teacherName: teacherData.email || 'Преподаватель'
-        };
-
+createCourseForm.addEventListener('submit', function(event) {
+    event.preventDefault();
+    
+    const courseData = {
+        title: document.getElementById('course-title').value,
+        description: document.getElementById('course-description').value,
+        price: parseFloat(document.getElementById('course-price').value) || 0,
+        teacherId: teacherData.id || 1,
+        teacherName: teacherData.email || 'Преподаватель'
+    };
+    
+    // 🔥 ПРОВЕРЯЕМ РЕЖИМ: создание или редактирование
+    if (editMode && editCourseId) {
+        // ✏️ РЕДАКТИРОВАНИЕ (PUT)
+        fetch(`/api/courses/${editCourseId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(courseData)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                alert('✅ Курс обновлён!');
+                modal.style.display = 'none';
+                createCourseForm.reset();
+                loadCourses();
+            } else {
+                alert('❌ Ошибка: ' + (result.errors ? result.errors.join(', ') : result.message));
+            }
+        })
+        .catch(error => {
+            alert('❌ Ошибка сети: ' + error.message);
+        })
+        .finally(() => {
+            // Сбрасываем режим редактирования
+            editMode = false;
+            editCourseId = null;
+            document.querySelector('#create-course-modal h2').textContent = 'Создать новый курс';
+            createCourseForm.querySelector('button[type="submit"]').textContent = 'Создать курс';
+        });
+        
+    } else {
+        // ➕ СОЗДАНИЕ (POST)
         fetch('/api/courses', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -109,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('✅ Курс успешно создан!');
                 modal.style.display = 'none';
                 createCourseForm.reset();
-                loadCourses(); // Перезагрузить список
+                loadCourses();
             } else {
                 alert('❌ Ошибка: ' + (result.errors ? result.errors.join(', ') : result.message));
             }
@@ -117,7 +163,8 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             alert('❌ Ошибка сети: ' + error.message);
         });
-    });
+    }
+});
 
     // ========================================
     // УДАЛЕНИЕ КУРСА (DELETE)
@@ -149,10 +196,51 @@ document.addEventListener('DOMContentLoaded', function() {
     // РЕДАКТИРОВАНИЕ КУРСА (UPDATE)
     // ========================================
 
-    window.editCourse = function(courseId) {
-        alert('Функция редактирования будет добавлена в следующем уроке!');
-        // В Уроке 9 добавим полноценное редактирование
-    };
+    // ========================================
+// РЕДАКТИРОВАНИЕ КУРСА (UPDATE)
+// ========================================
+
+// ========================================
+// РЕДАКТИРОВАНИЕ КУРСА (UPDATE)
+// ========================================
+
+window.editCourse = async function(courseId) {
+    try {
+        // Загружаем данные курса
+        const response = await fetch(`/api/courses/${courseId}`);
+        const result = await response.json();
+        
+        if (!result.success) {
+            alert('❌ Ошибка: ' + result.message);
+            return;
+        }
+        
+        const course = result.course;
+        
+        // 🔥 ВКЛЮЧАЕМ РЕЖИМ РЕДАКТИРОВАНИЯ
+        editMode = true;
+        editCourseId = courseId;
+        
+        // Заполняем форму данными курса
+        document.getElementById('course-title').value = course.title;
+        document.getElementById('course-description').value = course.description || '';
+        document.getElementById('course-price').value = course.price || 0;
+        
+        // Меняем заголовок модального окна
+        const modalTitle = document.querySelector('#create-course-modal h2');
+        modalTitle.textContent = '✏️ Редактировать курс';
+        
+        // Меняем текст кнопки
+        const submitBtn = createCourseForm.querySelector('button[type="submit"]');
+        submitBtn.textContent = '💾 Сохранить изменения';
+        
+        // Показываем модальное окно
+        modal.style.display = 'flex';
+        
+    } catch (error) {
+        alert('❌ Ошибка загрузки курса: ' + error.message);
+    }
+};
 
     // ========================================
     // ЗАГРУЗКА ПРИ ОТКРЫТИИ СТРАНИЦЫ

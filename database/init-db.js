@@ -45,6 +45,23 @@ db.exec(`
     )
 `);
 
+// Таблица записи на курсы (связь студентов с курсами)
+db.exec(`
+    CREATE TABLE IF NOT EXISTS enrollments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        studentId INTEGER NOT NULL,
+        courseId INTEGER NOT NULL,
+        enrolledAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        progress INTEGER DEFAULT 0,
+        status TEXT DEFAULT 'active',
+        FOREIGN KEY (studentId) REFERENCES users(id),
+        FOREIGN KEY (courseId) REFERENCES courses(id),
+        UNIQUE(studentId, courseId)
+    )
+`);
+
+console.log('✅ Таблица enrollments создана');
+
 // Таблица уроков
 db.exec(`
     CREATE TABLE IF NOT EXISTS lessons (

@@ -106,6 +106,11 @@ app.get('/teacher-dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, '../html/teacher-dashboard.html'));
 });
 
+// 🎓 Кабинет студента
+app.get('/student-dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, '../html/student-dashboard.html'));
+});
+
 /* ========================================
    6. МАРШРУТЫ — API (POST-запросы)
    ======================================== */
@@ -381,9 +386,142 @@ app.delete('/api/courses/:id', (req, res) => {
 });
 
 // ✏️ ОБНОВИТЬ КУРС (Update) - заготовка на Урок 9
+// ✏️ ОБНОВИТЬ КУРС (Update)
 app.put('/api/courses/:id', (req, res) => {
-    // Будет реализовано в следующем уроке
-    res.json({ success: true, message: 'Редактирование будет добавлено в Уроке 9' });
+    const courseId = req.params.id;
+    const { title, description, price } = req.body;
+    
+    // Валидация
+    const errors = [];
+    if (!title || title.trim().length < 3) {
+        errors.push('Название курса должно содержать минимум 3 символа');
+    }
+    
+    if (errors.length > 0) {
+        return res.status(400).json({ success: false, errors });
+    }
+    
+    try {
+        // Проверяем, существует ли курс
+        const checkStmt = db.prepare('SELECT * FROM courses WHERE id = ?');
+        const course = checkStmt.get(courseId);
+        
+        if (!course) {
+            return res.status(404).json({ success: false, message: 'Курс не найден' });
+        }
+        
+        // Обновляем курс
+        const stmt = db.prepare(`
+            UPDATE courses 
+            SET title = ?, description = ?, price = ?
+            WHERE id = ?
+        `);
+        
+        const result = stmt.run(
+            title.trim(),
+            description || '',
+            price || 0,
+            courseId
+        );
+        
+        console.log('✅ Курс обновлён:', courseId);
+        
+        res.json({
+            success: true,
+            message: 'Курс успешно обновлён!',
+            courseId: courseId
+        });
+        
+    } catch (error) {
+        console.error('Ошибка обновления курса:', error.message);
+        res.status(500).json({ success: false, message: 'Ошибка сервера' });
+    }
+});
+
+// 📚 ПОЛУЧИТЬ ОДИН КУРС (для редактирования)
+app.get('/api/courses/:id', (req, res) => {
+    const courseId = req.params.id;
+    
+    try {
+        const stmt = db.prepare('SELECT * FROM courses WHERE id = ?');
+        const course = stmt.get(courseId);
+        
+        if (!course) {
+            return res.status(404).json({ success: false, message: 'Курс не найден' });
+        }
+        
+        res.json({ success: true, course });
+        
+    } catch (error) {
+        console.error('Ошибка получения курса:', error.message);
+        res.status(500).json({ success: false, message: 'Ошибка сервера' });
+    }
+});
+
+
+/* ========================================
+   МАРШРУТЫ ДЛЯ ЗАПИСИ НА КУРСЫ (ENROLLMENTS)
+   ======================================== */
+
+// 📝 ЗАПИСАТЬСЯ НА КУРС (Create enrollment)
+app.post('/api/enrollments', (req, res) => {
+    const { studentId, courseId } = req.body;
+    
+    if (!studentId || !courseId) {
+        return res.status(400).json({ success: false, message: 'Не указаны studentId или courseId' });
+    }
+    
+    try {
+        const stmt = db.prepare(`
+            INSERT OR IGNORE INTO enrollments (studentId, courseId)
+            VALUES (?, ?)
+        `);
+        
+        const result = stmt.run(studentId, courseId);
+        
+        if (result.changes === 0) {
+            return res.status(400).json({ success: false, message: 'Вы уже записаны на этот курс' });
+        }
+        
+        console.log('✅ Студент записан на курс:', studentId, courseId);
+        
+        res.status(201).json({
+            success: true,
+            message: 'Вы успешно записаны на курс!',
+            enrollmentId: result.lastInsertRowid
+        });
+        
+    } catch (error) {
+        console.error('Ошибка записи на курс:', error.message);
+        res.status(500).json({ success: false, message: 'Ошибка сервера' });
+    }
+});
+
+// 📚 ПОЛУЧИТЬ МОИ КУРСЫ (Read enrollments)
+app.get('/api/enrollments/student/:studentId', (req, res) => {
+    const studentId = req.params.studentId;
+    
+    try {
+        const stmt = db.prepare(`
+            SELECT e.*, c.title as courseTitle, c.description, c.price
+            FROM enrollments e
+            JOIN courses c ON e.courseId = c.id
+            WHERE e.studentId = ?
+            ORDER BY e.enrolledAt DESC
+        `);
+        
+        const enrollments = stmt.all(studentId);
+        
+        res.json({
+            success: true,
+            count: enrollments.length,
+            enrollments: enrollments
+        });
+        
+    } catch (error) {
+        console.error('Ошибка получения записей:', error.message);
+        res.status(500).json({ success: false, message: 'Ошибка сервера' });
+    }
 });
 
 

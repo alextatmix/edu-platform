@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = '/teacher-dashboard.html';
     } else {
         // Студент → на главную
-        window.location.href = '/index.html';
+        window.location.href = '/student-dashboard.html';
     }
 })
         .catch(error => {
