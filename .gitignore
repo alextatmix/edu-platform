@@ -20,6 +20,9 @@ database/users.json
 *.tmp
 *.temp
 
+# Файлы пользователей (тестовые данные)
+database/users.json
+
 # 🖥️ Системные файлы Windows/Mac
 .DS_Store
 Thumbs.db
